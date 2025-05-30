@@ -28,8 +28,8 @@ $crm_ebash_token = '';
 $crm_ebash_adress = '';
 $crm_ebash_ofise = '';
 
-$token_magnetstore = '7e6eb99d76df63d45a5b9d19ef2fe7f4'; 
-$tenant_magnetstore = 'magnetstore'; 
+$token_magnetstore = ''; 
+$tenant_magnetstore = 'store'; 
 
 $api_token_keep_crm = '';
 
