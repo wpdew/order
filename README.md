@@ -103,56 +103,23 @@ $arrTg = array(
 
 ### Exequte
 ```php
-$order = new Order;
+use Order;
 
-if($type_form == 'offer'){
+$order = $order->greet('Aleksandr');
 
-	//add recaptcha
-	//$Return = $order->getCaptcha($_POST['g-recaptcha-response']);
-	//if($Return->success == true && $Return->score > 0.5){
- 
-	if(in_array($ip, $spamip) ){
-		$spam = 'spam';
-		sleep(2);
-	}else{
+$tgtoken = '';
+$tgchatid = '';
 
-		if($tgchatid != ''){
-			$order->sendToTelegram($tgtoken, $tgchatid, $arrTg); 
-		}  
-		if($email != ''){
-			$order->sendEmail($email, $arrTg);
-		}
-		if($crm_lp_token != ''){
-			$order->sendToLpCrm($crm_lp_token, $crm_lp_adress, $dataarray);
-		}
-		if($token_magnetstore != ''){
-			$order->sendToMagnetstore($token_magnetstore, $tenant_magnetstore, $dataarray);
-		}
-		if($crm_salesdrive_token != ''){
-			$order->sendToSalesDrive($crm_salesdrive_token, $crm_salesdrive_sources, $dataarray);
-		}
-		if($crm_key_token != ''){
-			if($crm_key_voronka != ''){
-				$order->sendToKeyCrmLead($crm_key_token, $crm_key_sources, $crm_key_voronka, $dataarray);
-			}else{
-				$order->sendToKeyCrm($crm_key_token, $crm_key_sources, $dataarray);
-			}
-		}
-		if($crm_ebash_token != ''){
-			$order->sendToEbashCrm($crm_ebash_token, $crm_ebash_adress, $crm_ebash_ofise, $dataarray);
-		}
-		if($api_token_keep_crm != ''){
-			$order->sendToKeepinCRM($api_token_keep_crm, $dataarray);
-		}
-		$spam = 'nospam';
-	}
+$arrTg = array(
+	'💁‍♂️ Ім`я: ' => 'Aleks',
+	'📱 Телефон: ' => '0679999999',
+	'📍 ID продукта: ' => 5,
+	'📦 Товар: ' => 'Test Tovar',
+	'💸 Ціна: ' => '650 грн',
+	'🌐 Сайт: ' => $_SERVER['SERVER_NAME'],
+);
+$order->sendToTelegram($tgtoken, $tgchatid, $arrTg);
 
-	//add recaptcha end
-	//}else{
-	// header("Location: {$_SERVER['HTTP_REFERER']}");
-	//}
-		
-}
 ```
 
 ### Body order class
