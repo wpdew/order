@@ -131,53 +131,72 @@ class Order
         curl_close($ch);
     }
 
-    public function sendToMagnetstore(string $token, string $tenant, array $data): void
-    {
-        $ip_address = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    public function sendToMagnetstore(string $token, string $tenant, array $data): array
+	{
+		$ip_address = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 
-        $payload = [
-            "office" => 1,
-            "country_id" => 250,
-            "products" => [[
-                "id" => (int) $data['product_id'],
-                "amount" => (int) $data['count'],
-                "price" => (float) $data['product_price']
-            ]],
-            "fio" => $data['name'] ?? '',
-            "phone" => $data['phone'] ?? '',
-            "comment" => $data['comment'] ?? '',
-            "payment" => 1,
-            "additional_field_1" => "",
-            "additional_field_2" => "",
-            "additional_field_3" => "",
-            "additional_field_4" => "",
-            "utm_source" => $_SESSION['utms']['utm_source'] ?? '',
-            "utm_medium" => $_SESSION['utms']['utm_medium'] ?? '',
-            "utm_campaign" => $_SESSION['utms']['utm_campaign'] ?? '',
-            "utm_term" => $_SESSION['utms']['utm_term'] ?? '',
-            "utm_content" => $_SESSION['utms']['utm_content'] ?? '',
-            "order_website" => (empty($_SERVER['HTTPS']) ? 'http' : 'https') . "://{$_SERVER['HTTP_HOST']}",
-            "user_ip" => $ip_address,
-        ];
+		$payload = [
+			"office" => $data['office'] ?? '1',
+			"country_id" => $data['country_id'] ?? '250',
+			"products" => [[
+				"id" => (int) $data['product_id'],
+				"amount" => (int) $data['count'],
+				"price" => (float) $data['product_price']
+			]],
+			"fio" => $data['name'] ?? '',
+			"phone" => $data['phone'] ?? '',
+			"comment" => $data['comment'] ?? '',
+			"payment" => $data['payment'] ?? '1',
+			"additional_field_1" => $data['additional_1'] ?? '',
+			"additional_field_2" => $data['additional_2'] ?? '',
+			"additional_field_3" => $data['additional_3'] ?? '',
+			"additional_field_4" => $data['additional_4'] ?? '',
+			"utm_source" => $_SESSION['utms']['utm_source'] ?? '',
+			"utm_medium" => $_SESSION['utms']['utm_medium'] ?? '',
+			"utm_campaign" => $_SESSION['utms']['utm_campaign'] ?? '',
+			"utm_term" => $_SESSION['utms']['utm_term'] ?? '',
+			"utm_content" => $_SESSION['utms']['utm_content'] ?? '',
+			"order_website" => (empty($_SERVER['HTTPS']) ? 'http' : 'https') . "://{$_SERVER['HTTP_HOST']}",
+			"user_ip" => $ip_address,
+		];
 
-        $url = "https://{$tenant}.go.profi-crm.com/open-api/order-store?token={$token}";
+		$url = "https://{$tenant}.go.profi-crm.com/open-api/order-store?token={$token}";
 
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
-                'Accept: application/json',
-            ]
-        ]);
-        $response = curl_exec($ch);
-        if ($response === false) {
-            throw new Exception('Magnetstore request failed: ' . curl_error($ch));
-        }
-        curl_close($ch);
-    }
+		$ch = curl_init($url);
+		curl_setopt_array($ch, [
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_POST => true,
+			CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
+			CURLOPT_HTTPHEADER => [
+				'Content-Type: application/json',
+				'Accept: application/json',
+			]
+		]);
+
+		$response = curl_exec($ch);
+		$error = curl_error($ch);
+		curl_close($ch);
+
+		if ($response === false || !empty($error)) {
+			return [
+				'status' => 'error',
+				'message' => 'Magnetstore request failed: ' . $error
+			];
+		}
+
+		$result = json_decode($response);
+		if (!isset($response)) {
+			return [
+				'status' => 'error',
+				'message' => htmlspecialchars($response) ?? 'Unknown error from Magnetstore API'
+			];
+		}
+
+		return [
+			'status' => 'success',
+			'message' => 'Order sent successfully to Magnetstore'
+		];
+	}
 
 	/**
      * Отправка заказа в SalesDrive
