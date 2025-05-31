@@ -13,34 +13,62 @@ class Order
         return 'Hi ' . $name . ' from Order Class';
     }
 
-    public function sendToTelegram(string $tgtoken, string $tgchatid, array $arrTg): void
-    {
-        $txt = '';
-        foreach ($arrTg as $key => $value) {
-            $txt .= "<b>{$key}</b> {$value}%0A";
-        }
+    public function sendToTelegram(string $tgtoken, string $tgchatid, array $arrTg): array
+	{
+		$txt = '';
+		foreach ($arrTg as $key => $value) {
+			$txt .= "<b>{$key}</b> {$value}%0A";
+		}
 
-        $url = "https://api.telegram.org/bot{$tgtoken}/sendMessage?chat_id={$tgchatid}&parse_mode=html&text={$txt}";
-        if (!@fopen($url, 'r')) {
-            throw new Exception('Failed to send Telegram message');
-        }
-    }
+		$url = "https://api.telegram.org/bot{$tgtoken}/sendMessage?chat_id={$tgchatid}&parse_mode=html&text={$txt}";
+		$response = file_get_contents($url);
 
-    public function sendEmail(string $email, array $arrTg): void
-    {
-        $subject = "Заказ товара ";
-        $message = "<b>Заказ товара</b><br/><hr/><br/>";
-        foreach ($arrTg as $key => $value) {
-            $message .= "<b>{$key}</b> {$value}<br/>";
-        }
-        $message .= "<hr/><br/><b>Дата: </b> " . date("Y-m-d H:i:s") . "<br/>";
-        $message .= "Разработка конфигуратора  <a href='https://t.me/WpDews'>@WpDews</a><br/>";
+		if ($response === false) {
+			return [
+				'status' => 'error',
+				'message' => 'Failed to send Telegram message'
+			];
+		}
 
-        $headers = "Content-type: text/html; charset=UTF-8\r\n";
-        if (!mail($email, $subject, $message, $headers)) {
-            throw new Exception('Failed to send email');
-        }
-    }
+		$result = json_decode($response);
+		if (!isset($result->ok) || $result->ok !== true) {
+			return [
+				'status' => 'error',
+				'message' => $result->description ?? 'Unknown error'
+			];
+		}
+
+		return [
+			'status' => 'success',
+			'message' => 'Message sent successfully'
+		];
+	}
+
+   public function sendEmail(string $email, array $arrTg): array
+	{
+		$subject = "Заказ товара ";
+		$message = "<b>Заказ товара</b><br/><hr/><br/>";
+		foreach ($arrTg as $key => $value) {
+			$message .= "<b>{$key}</b> {$value}<br/>";
+		}
+		$message .= "<hr/><br/><b>Дата: </b> " . date("Y-m-d H:i:s") . "<br/>";
+		$message .= "Разработка конфигуратора  <a href='https://t.me/WpDews'>@WpDews</a><br/>";
+
+		$headers = "Content-type: text/html; charset=UTF-8\r\n";
+		$success = mail($email, $subject, $message, $headers);
+
+		if (!$success) {
+			return [
+				'status' => 'error',
+				'message' => 'Failed to send email'
+			];
+		}
+
+		return [
+			'status' => 'success',
+			'message' => 'Email sent successfully'
+		];
+	}
 
     public function getCaptcha(string $secretKey, string $responseToken): object
     {

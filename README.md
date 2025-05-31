@@ -118,7 +118,19 @@ $arrTg = array(
 	'💸 Ціна: ' => '650 грн',
 	'🌐 Сайт: ' => $_SERVER['SERVER_NAME'],
 );
-$order->sendToTelegram($tgtoken, $tgchatid, $arrTg);
+$response = $order->sendToTelegram($tgtoken, $tgchatid, $arrTg);
+		
+	if ($response['status'] == 'success') {
+		$_SESSION['flash_toastr'] = [
+			'type' => 'success',
+			'message' => __('Telegram message sent successfully!')
+		];
+	} else {
+		$_SESSION['flash_toastr'] = [
+			'type' => 'error',
+			'message' => __('Failed to send Telegram message: ') . $response['message']
+		];
+	}
 
 ```
 
