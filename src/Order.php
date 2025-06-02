@@ -88,11 +88,13 @@ class Order
 
     public function sendToLpCrm(string $token, string $url, array $dataarray): void
     {
-        $products_list = [[
-            'product_id' => $dataarray['product_id'],
-            'price' => $dataarray['product_price'],
-            'count' => $dataarray['count'],
-        ]];
+        $products_list = array(
+			0 => array(
+					'product_id' => $dataarray['product_id'],
+					'price'      => $dataarray['product_price'],
+					'count'      => $dataarray['count'],
+				),
+			);
 
         $products = urlencode(serialize($products_list));
         $sender = urlencode(serialize($_SERVER));
@@ -136,8 +138,8 @@ class Order
 		$ip_address = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 
 		$payload = [
-			"office" => $data['office'] ?? '1',
-			"country_id" => $data['country_id'] ?? '250',
+			"office" => 1,
+			"country_id" => 250,
 			"products" => [[
 				"id" => (int) $data['product_id'],
 				"amount" => (int) $data['count'],
@@ -146,7 +148,7 @@ class Order
 			"fio" => $data['name'] ?? '',
 			"phone" => $data['phone'] ?? '',
 			"comment" => $data['comment'] ?? '',
-			"payment" => $data['payment'] ?? '1',
+			"payment" => 1,
 			"additional_field_1" => $data['additional_1'] ?? '',
 			"additional_field_2" => $data['additional_2'] ?? '',
 			"additional_field_3" => $data['additional_3'] ?? '',

@@ -1,5 +1,6 @@
 ## Order class
 
+This class is designed to handle order processing, including sending order details to Telegram and other CRM systems. It includes methods for greeting the user, sending messages to Telegram, and handling various CRM integrations.
 
 ### param
 ```php
