@@ -21,7 +21,25 @@ class Order
 		}
 
 		$url = "https://api.telegram.org/bot{$tgtoken}/sendMessage?chat_id={$tgchatid}&parse_mode=html&text={$txt}";
-		$response = file_get_contents($url);
+		$headers = get_headers($url, true);
+
+		$http_code = 0;
+		if ($headers && isset($headers[0]) && preg_match('#HTTP/\d+\.\d+\s+(\d+)#', $headers[0], $matches)) {
+			$http_code = (int) $matches[1];
+		}
+		if ($http_code === 401) {
+			return [
+				'status' => 'error',
+				'message' => 'Failed to connect to Telegram API'
+			];
+		}elseif ($http_code !== 200) {
+			return [
+				'status' => 'error',
+				'message' => 'Unexpected HTTP response code: ' . $http_code
+			];
+		}else{
+			$response = file_get_contents($url);
+		}
 
 		if ($response === false) {
 			return [
