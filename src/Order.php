@@ -25,6 +25,17 @@ class Order
 			$params .= urlencode($key) . '=' . urlencode($value) . '&';
 		}
 		$sendToSheets = fopen("{$googleURL}?{$params}", "r");
+		if ($sendToSheets === false) {
+			return [
+				'status' => 'error',
+				'message' => 'Failed to send data to Google Sheets'
+			];
+		}else{
+			return [
+				'status' => 'success',
+				'message' => 'Data sent to Google Sheets successfully'
+			];
+		}
 	}
 
     public function sendToTelegram(string $tgtoken, string $tgchatid, array $arrTg): array
