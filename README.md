@@ -36,6 +36,8 @@ $api_token_keep_crm = '';
 
 $email = '';
 
+$googleURL = '';
+
 $name = $_POST['name'];
 $phone = preg_replace('/[^0-9]/', '', $_POST['phone']);
 
