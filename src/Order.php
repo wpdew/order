@@ -13,6 +13,20 @@ class Order
         return 'Hi ' . $name . ' from Order Class';
     }
 
+	//send sendToGoogleSheets function
+	public function sendToGoogleSheets($googleURL, $arrData) {
+		$params = '';
+		$arrData = array_merge(
+			array('Timestamp' => date("d.m.Y H:i")),
+			$arrData
+		);
+
+		foreach ($arrData as $key => $value) {
+			$params .= urlencode($key) . '=' . urlencode($value) . '&';
+		}
+		$sendToSheets = fopen("{$googleURL}?{$params}", "r");
+	}
+
     public function sendToTelegram(string $tgtoken, string $tgchatid, array $arrTg): array
 	{
 		$txt = '';
