@@ -42,49 +42,38 @@ class Order
 	{
 		$txt = '';
 		foreach ($arrTg as $key => $value) {
-			$txt .= "<b>{$key}</b> {$value}%0A";
+			$txt .= "<b>{$key}</b> {$value}\n";
 		}
 
-		$url = "https://api.telegram.org/bot{$tgtoken}/sendMessage?chat_id={$tgchatid}&parse_mode=html&text={$txt}";
-		$headers = get_headers($url, true);
+		$url = "https://api.telegram.org/bot{$tgtoken}/sendMessage";
 
-		$http_code = 0;
-		if ($headers && isset($headers[0]) && preg_match('#HTTP/\d+\.\d+\s+(\d+)#', $headers[0], $matches)) {
-			$http_code = (int) $matches[1];
-		}
+		$ch = curl_init($url);
+		curl_setopt_array($ch, [
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_POST => true,
+			CURLOPT_POSTFIELDS => [
+				'chat_id' => $tgchatid,
+				'parse_mode' => 'HTML',
+				'text' => $txt
+			]
+		]);
+
+		$response = curl_exec($ch);
+		$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+
 		if ($http_code === 401) {
-			return [
-				'status' => 'error',
-				'message' => 'Failed to connect to Telegram API'
-			];
-		}elseif ($http_code !== 200) {
-			return [
-				'status' => 'error',
-				'message' => 'Unexpected HTTP response code: ' . $http_code
-			];
-		}else{
-			$response = file_get_contents($url);
+			return ['status' => 'error', 'message' => 'Failed to connect to Telegram API'];
+		} elseif ($http_code !== 200) {
+			return ['status' => 'error', 'message' => 'Unexpected HTTP response code: ' . $http_code];
 		}
 
-		if ($response === false) {
-			return [
-				'status' => 'error',
-				'message' => 'Failed to send Telegram message'
-			];
+		$result = json_decode($response, true);
+		if (empty($result['ok'])) {
+			return ['status' => 'error', 'message' => $result['description'] ?? 'Unknown error'];
 		}
 
-		$result = json_decode($response);
-		if (!isset($result->ok) || $result->ok !== true) {
-			return [
-				'status' => 'error',
-				'message' => $result->description ?? 'Unknown error'
-			];
-		}
-
-		return [
-			'status' => 'success',
-			'message' => 'Message sent successfully'
-		];
+		return ['status' => 'success', 'message' => 'Message sent successfully'];
 	}
 
    public function sendEmail(string $email, array $arrTg): array
